@@ -6,8 +6,8 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ivenue:ivenue@postgres:5432/ivenue}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
     depends_on:
       postgres:
         condition: service_healthy
@@ -17,24 +17,28 @@ services:
       - "${API_PORT:-8000}:8000"
     volumes:
       - ./backend:/app
+    networks:
+      - app-network
     command: uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   postgres:
-    image: postgres:16-alpine
+    image: postgis/postgis:16-3.4
     container_name: iVenue-postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-ivenue}
+      POSTGRES_USER: ${POSTGRES_USER:-ivenue}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ivenue}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ivenue} -d ${POSTGRES_DB:-ivenue}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
   redis:
     image: redis:7-alpine
@@ -43,7 +47,13 @@ services:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  app-network:
+    driver: bridge
