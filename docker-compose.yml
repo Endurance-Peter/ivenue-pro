@@ -1,12 +1,12 @@
 services:
-  api:
+  backend:  # CHANGED: Now perfectly matches your /backend directory structure
     build:
       context: ./backend
     container_name: iVenue-api
     env_file:
       - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://ivenue:ivenue@postgres:5432/ivenue}
+      DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
     depends_on:
       postgres:
@@ -17,6 +17,7 @@ services:
       - "${API_PORT:-8000}:8000"
     volumes:
       - ./backend:/app
+      - /app/.venv
     networks:
       - app-network
     command: uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
@@ -25,9 +26,9 @@ services:
     image: postgis/postgis:16-3.4
     container_name: iVenue-postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-ivenue}
+      POSTGRES_DB: ${POSTGRES_DB:-ivenuedb}
       POSTGRES_USER: ${POSTGRES_USER:-ivenue}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ivenue}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-p@ssw0rd}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:

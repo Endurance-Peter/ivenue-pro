@@ -1,0 +1,2 @@
+Generic single-database configuration.
+alembic revision --autogenerate -m "create_init_table" --rev-id M202606261532

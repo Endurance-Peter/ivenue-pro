@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir uv
 WORKDIR /app
 
 COPY pyproject.toml ./
-RUN uv sync --frozen --no-dev
+RUN uv sync --no-dev
 
 FROM base AS development
 
