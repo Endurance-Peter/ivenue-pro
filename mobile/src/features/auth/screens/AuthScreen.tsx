@@ -2,6 +2,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, useWindow
 
 import { colors } from '../../../theme/colors';
 import { AuthForm } from '../components/AuthForm';
+import { AuthSuccess } from '../components/AuthSuccess';
 import { BrandPanel } from '../components/BrandPanel';
 import { SignUpForm } from '../components/SignUpForm';
 import { useAuthFlow } from '../hooks/useAuthFlow';
@@ -22,7 +23,7 @@ export function AuthScreen() {
                 <Text style={styles.mobileBrandName}>iVenue</Text>
               </View>
             ) : <BrandPanel />}
-            <SignUpForm onBack={auth.backToVerification} />
+            {auth.state.mode === 'signin' ? <AuthSuccess onContinue={() => undefined} /> : <SignUpForm onBack={auth.backToVerification} />}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -51,6 +52,8 @@ export function AuthScreen() {
             onContinue={auth.continueToCode}
             onVerify={auth.verifyCode}
             onUseDifferentNumber={auth.useDifferentNumber}
+            mode={auth.state.mode}
+            onModeChange={auth.setMode}
           />
         </View>
       </ScrollView>

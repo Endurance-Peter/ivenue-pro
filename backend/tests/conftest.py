@@ -10,6 +10,10 @@ from sqlalchemy.pool import NullPool
 
 TEST_DATABASE_PATH = Path(__file__).parent / "test.db"
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{TEST_DATABASE_PATH.as_posix()}"
+os.environ["APP_ENV"] = "test"
+os.environ["RESEND_API_KEY"] = ""
+os.environ["TERMII_API_KEY"] = ""
+os.environ["OTP_RESEND_COOLDOWN_SECONDS"] = "0"
 sys.path.insert(0, str(Path(__file__).parents[1]))
 
 from app.database import Base, get_db  # noqa: E402

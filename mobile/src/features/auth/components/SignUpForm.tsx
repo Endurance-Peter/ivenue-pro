@@ -19,7 +19,7 @@ export function SignUpForm({ onBack }: SignUpFormProps) {
   return (
     <View style={styles.panel}>
       <Pressable onPress={onBack} style={styles.backButton}>
-        <Text style={styles.backArrow}>&lt;-</Text><Text style={styles.backText}>Back</Text>
+        <View style={styles.backIcon}><View style={styles.backStem} /><View style={styles.backHead} /></View><Text style={styles.backText}>Back</Text>
       </Pressable>
       <View style={styles.progressRow}>{[0, 1, 2].map((index) => <View key={index} style={styles.progressBar} />)}</View>
       <View style={styles.iconTile}><Text style={styles.profileIcon}>iV</Text></View>
@@ -39,7 +39,7 @@ export function SignUpForm({ onBack }: SignUpFormProps) {
       </View>
 
       <Pressable disabled={!canSubmit} onPress={() => setSubmitted(true)} style={[styles.actionButton, !canSubmit && styles.actionDisabled]}>
-        <Text style={styles.actionText}>{submitted ? 'Account ready' : 'Enter iVenue'}</Text><Text style={styles.actionArrow}>-&gt;</Text>
+        <Text style={styles.actionText}>{submitted ? 'Account ready' : 'Enter iVenue'}</Text><Text style={styles.actionArrow}>›</Text>
       </Pressable>
       {submitted ? <Text style={styles.success}>Your iVenue profile is ready.</Text> : null}
     </View>
@@ -58,7 +58,7 @@ function ChoiceCard({ active, detail, label, onPress }: { active: boolean; detai
 const styles = StyleSheet.create({
   panel: { paddingHorizontal: 28, paddingTop: 24, paddingBottom: 40 },
   backButton: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 28 },
-  backArrow: { color: '#786f66', fontSize: 17 }, backText: { color: '#786f66', fontSize: 14 },
+  backIcon: { width: 18, height: 14, justifyContent: 'center' }, backStem: { width: 14, height: 1.5, backgroundColor: '#786f66', marginLeft: 3 }, backHead: { position: 'absolute', width: 8, height: 8, borderLeftWidth: 1.5, borderBottomWidth: 1.5, borderColor: '#786f66', transform: [{ rotate: '45deg' }], left: 1 }, backText: { color: '#786f66', fontSize: 14 },
   progressRow: { flexDirection: 'row', gap: 8, marginBottom: 36 }, progressBar: { height: 4, flex: 1, borderRadius: 4, backgroundColor: colors.accent },
   iconTile: { width: 56, height: 56, borderRadius: 16, backgroundColor: colors.softSurface, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
   profileIcon: { color: colors.accent, fontFamily: 'serif', fontSize: 20, fontWeight: '700' },

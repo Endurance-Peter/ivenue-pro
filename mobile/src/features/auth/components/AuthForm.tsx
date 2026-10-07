@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors } from '../../../theme/colors';
-import { AuthStep } from '../auth.types';
+import { AuthMode, AuthStep } from '../auth.types';
 
 interface AuthFormProps {
   step: AuthStep;
@@ -16,14 +16,16 @@ interface AuthFormProps {
   onContinue: () => void;
   onVerify: () => void;
   onUseDifferentNumber: () => void;
+  mode: AuthMode;
+  onModeChange: (mode: AuthMode) => void;
 }
 
 const countries = [
-  { name: 'Nigeria', flag: 'NG', code: '+234' },
-  { name: 'Ghana', flag: 'GH', code: '+233' },
-  { name: 'Kenya', flag: 'KE', code: '+254' },
-  { name: 'United Kingdom', flag: 'GB', code: '+44' },
-  { name: 'United States', flag: 'US', code: '+1' },
+  { name: 'Nigeria', flag: 'NG', code: '+234', placeholder: '801 234 5678' },
+  { name: 'Ghana', flag: 'GH', code: '+233', placeholder: '24 123 4567' },
+  { name: 'Kenya', flag: 'KE', code: '+254', placeholder: '712 345 678' },
+  { name: 'United Kingdom', flag: 'GB', code: '+44', placeholder: '7400 123456' },
+  { name: 'United States', flag: 'US', code: '+1', placeholder: '(555) 000-0000' },
 ];
 
 export function AuthForm({
@@ -38,6 +40,8 @@ export function AuthForm({
   onContinue,
   onVerify,
   onUseDifferentNumber,
+  mode,
+  onModeChange,
 }: AuthFormProps) {
   const isPhoneStep = step === 'phone';
 
@@ -50,15 +54,28 @@ export function AuthForm({
       </View>
       <View style={styles.iconTile}><Text style={styles.phoneIcon}>⌕</Text></View>
       <Text style={styles.title}>{isPhoneStep ? 'Welcome to iVenue' : 'Check your messages'}</Text>
+      {isPhoneStep ? (
+        <View style={styles.modeToggle}>
+          <Pressable onPress={() => onModeChange('signup')} style={[styles.modeOption, mode === 'signup' && styles.modeOptionActive]}>
+            <Text style={[styles.modeText, mode === 'signup' && styles.modeTextActive]}>Create account</Text>
+          </Pressable>
+          <Pressable onPress={() => onModeChange('signin')} style={[styles.modeOption, mode === 'signin' && styles.modeOptionActive]}>
+            <Text style={[styles.modeText, mode === 'signin' && styles.modeTextActive]}>Sign in</Text>
+          </Pressable>
+        </View>
+      ) : null}
       <Text style={styles.subtitle}>
         {isPhoneStep
-          ? 'Sign in or create an account with your mobile number.\nWe will send you a one-time verification code.'
+          ? mode === 'signup'
+            ? 'Create your iVenue account with your mobile number. We will send you a one-time verification code.'
+            : 'Welcome back. Enter your mobile number and we will send you a one-time verification code.'
           : `Enter the six-digit code sent to ${phone || 'your mobile number'}.`}
       </Text>
 
       {isPhoneStep ? (
         <PhoneStep
           phone={phone}
+          mode={mode}
           canContinue={canContinue}
           hasError={Boolean(error)}
           onPhoneChange={onPhoneChange}
@@ -81,7 +98,7 @@ export function AuthForm({
   );
 }
 
-function PhoneStep({ phone, canContinue, hasError, onPhoneChange, onContinue }: Pick<AuthFormProps, 'phone' | 'canContinue' | 'onPhoneChange' | 'onContinue'> & { hasError: boolean }) {
+function PhoneStep({ phone, mode, canContinue, hasError, onPhoneChange, onContinue }: Pick<AuthFormProps, 'phone' | 'mode' | 'canContinue' | 'onPhoneChange' | 'onContinue'> & { hasError: boolean }) {
   const [country, setCountry] = useState(countries[0]);
   const [countryMenuOpen, setCountryMenuOpen] = useState(false);
 
@@ -91,9 +108,9 @@ function PhoneStep({ phone, canContinue, hasError, onPhoneChange, onContinue }: 
       <View style={[styles.phoneInput, hasError && styles.inputError]}>
         <Pressable accessibilityRole="button" onPress={() => setCountryMenuOpen((open) => !open)} style={styles.countrySelector}>
           <Text style={styles.country}>{country.flag}  {country.code}</Text>
-          <Text style={styles.countryChevron}>{countryMenuOpen ? '^' : 'v'}</Text>
+          <View style={[styles.chevron, countryMenuOpen && styles.chevronOpen]} />
         </Pressable>
-        <TextInput autoFocus keyboardType="phone-pad" onChangeText={onPhoneChange} placeholder="(555) 000-0000" placeholderTextColor={colors.muted} style={styles.input} value={phone} />
+        <TextInput autoFocus keyboardType="phone-pad" onChangeText={onPhoneChange} placeholder={country.placeholder} placeholderTextColor={colors.muted} style={styles.input} value={phone} />
       </View>
       {countryMenuOpen ? (
         <View style={styles.countryMenu}>
@@ -105,7 +122,7 @@ function PhoneStep({ phone, canContinue, hasError, onPhoneChange, onContinue }: 
           ))}
         </View>
       ) : null}
-      <ActionButton disabled={!canContinue} label="Continue" onPress={onContinue} />
+          <ActionButton disabled={!canContinue} label={mode === 'signin' ? 'Send sign-in code' : 'Continue'} onPress={onContinue} />
     </>
   );
 }
@@ -126,7 +143,7 @@ function CodeStep({ code, canVerify, hasError, onCodeChange, onVerify, onUseDiff
 function ActionButton({ disabled, label, onPress }: { disabled: boolean; label: string; onPress: () => void }) {
   return (
     <Pressable disabled={disabled} onPress={onPress} style={[styles.actionButton, disabled && styles.actionDisabled]}>
-      <Text style={styles.actionText}>{label}</Text><Text style={styles.actionArrow}>-&gt;</Text>
+      <Text style={styles.actionText}>{label}</Text><Text style={styles.actionArrow}>›</Text>
     </Pressable>
   );
 }
@@ -136,6 +153,11 @@ const styles = StyleSheet.create({
   progressRow: { flexDirection: 'row', gap: 8, marginBottom: 42 },
   progressBar: { height: 4, flex: 1, borderRadius: 4, backgroundColor: '#e9e4dd' },
   progressActive: { backgroundColor: colors.accent },
+  modeToggle: { flexDirection: 'row', backgroundColor: colors.softSurface, borderRadius: 12, padding: 4, marginTop: 22, marginBottom: 18 },
+  modeOption: { flex: 1, alignItems: 'center', borderRadius: 9, paddingVertical: 10 },
+  modeOptionActive: { backgroundColor: colors.surface },
+  modeText: { color: '#786f66', fontSize: 13, fontWeight: '600' },
+  modeTextActive: { color: colors.ink },
   iconTile: { width: 56, height: 56, borderRadius: 16, backgroundColor: colors.softSurface, alignItems: 'center', justifyContent: 'center', marginBottom: 28 },
   phoneIcon: { color: colors.accent, fontSize: 30, transform: [{ rotate: '-35deg' }] },
   title: { color: colors.ink, fontFamily: 'serif', fontSize: 35, lineHeight: 40 },
@@ -144,7 +166,8 @@ const styles = StyleSheet.create({
   phoneInput: { minHeight: 64, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.line, borderRadius: 16, backgroundColor: colors.surface },
   countrySelector: { minHeight: 44, flexDirection: 'row', alignItems: 'center', borderRightWidth: 1, borderRightColor: colors.line, paddingHorizontal: 12 },
   country: { color: colors.ink, fontSize: 14 },
-  countryChevron: { color: colors.muted, fontSize: 12, marginLeft: 8 },
+  chevron: { width: 8, height: 8, borderRightWidth: 1.5, borderBottomWidth: 1.5, borderColor: colors.muted, marginLeft: 10, transform: [{ rotate: '45deg' }, { translateY: -2 }] },
+  chevronOpen: { transform: [{ rotate: '225deg' }, { translateY: 2 }] },
   input: { flex: 1, color: colors.ink, fontSize: 17, paddingHorizontal: 16 },
   countryMenu: { backgroundColor: colors.surface, borderColor: colors.line, borderRadius: 14, borderWidth: 1, marginTop: 8, overflow: 'hidden' },
   countryOption: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14 },

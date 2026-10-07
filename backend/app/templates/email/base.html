@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ subject|default('iVenue') }}</title>
+</head>
+<body style="margin:0;background:#f7f3ed;color:#191612;font-family:Arial,sans-serif;">
+  <div style="max-width:600px;margin:32px auto;padding:32px;background:#fff;border-radius:16px;">
+    <div style="font-size:24px;font-weight:700;margin-bottom:28px;">i<span style="color:#c97832;">V</span>enue</div>
+    {% block content %}{% endblock %}
+    <p style="margin-top:32px;color:#786f66;font-size:12px;">This message was sent by iVenue. Please do not reply to this email.</p>
+  </div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { AuthFormState } from '../auth.types';
+import { AuthFormState, AuthMode } from '../auth.types';
 import { isCodeValid, isPhoneValid } from '../auth.validation';
 
 const initialState: AuthFormState = {
@@ -8,6 +8,7 @@ const initialState: AuthFormState = {
   code: '',
   step: 'phone',
   error: '',
+  mode: 'signup',
 };
 
 export function useAuthFlow() {
@@ -47,6 +48,10 @@ export function useAuthFlow() {
     setState((current) => ({ ...current, step: 'code', error: '' }));
   };
 
+  const setMode = (mode: AuthMode) => {
+    setState((current) => ({ ...initialState, mode }));
+  };
+
   return {
     state,
     canContinue: isPhoneValid(state.phone),
@@ -57,5 +62,6 @@ export function useAuthFlow() {
     verifyCode,
     useDifferentNumber,
     backToVerification,
+    setMode,
   };
 }

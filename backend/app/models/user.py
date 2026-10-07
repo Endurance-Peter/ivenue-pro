@@ -15,7 +15,7 @@ class User(Base):
     phone = Column(String(20), unique=True, nullable=False, index=True)
     full_name = Column(String(120), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
-    account_type = Column(String(20), nullable=False, server_default="customer")
+    role = Column(String(20), nullable=False, server_default="customer", index=True)
     is_verified = Column(Boolean, nullable=False, server_default="0")
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

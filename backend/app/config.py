@@ -14,6 +14,18 @@ class Settings(BaseSettings):
     secret_key: str = Field(default="development-secret")
     
     project_name: str = Field(default="iVenue API")
+    resend_api_key: str | None = None
+    resend_api_url: str = Field(default="https://api.resend.com/emails")
+    resend_from_email: str = Field(default="iVenue <onboarding@resend.dev>")
+    termii_api_key: str | None = None
+    termii_api_url: str = Field(default="https://api.ng.termii.com/api/sms/send")
+    termii_sender_id: str = Field(default="iVenue")
+    public_app_url: str = Field(default="http://localhost:8081")
+    jwt_algorithm: str = Field(default="HS256")
+    jwt_access_token_expire_minutes: int = Field(default=30)
+    otp_expiry_minutes: int = Field(default=5)
+    otp_max_attempts: int = Field(default=5)
+    otp_resend_cooldown_seconds: int = Field(default=60)
 
     model_config = SettingsConfigDict(
         env_file=Path(__file__).resolve().parents[2] / ".env",

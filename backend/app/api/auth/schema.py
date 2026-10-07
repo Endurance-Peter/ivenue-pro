@@ -3,14 +3,18 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
-AccountType = Literal["customer", "host"]
+Role = Literal["customer", "host", "admin", "super_admin"]
 
 
 class SignupRequest(BaseModel):
     phone: str = Field(min_length=10, max_length=20)
     full_name: str = Field(min_length=2, max_length=120)
     email: EmailStr
-    account_type: AccountType = "customer"
+    role: Literal["customer", "host"] = "customer"
+
+
+class SigninRequest(BaseModel):
+    phone: str = Field(min_length=10, max_length=20)
 
 
 class VerifyCodeRequest(BaseModel):
@@ -18,7 +22,7 @@ class VerifyCodeRequest(BaseModel):
     code: str = Field(pattern=r"^\d{6}$")
     full_name: str = Field(min_length=2, max_length=120)
     email: EmailStr
-    account_type: AccountType = "customer"
+    role: Literal["customer", "host"] = "customer"
 
 
 class VerificationResponse(BaseModel):
@@ -33,5 +37,16 @@ class UserResponse(BaseModel):
     phone: str
     full_name: str
     email: EmailStr
-    account_type: AccountType
+    role: Role
     is_verified: bool
+
+
+class SigninVerifyRequest(BaseModel):
+    phone: str = Field(min_length=10, max_length=20)
+    code: str = Field(pattern=r"^\d{6}$")
+
+
+class SessionResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse

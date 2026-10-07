@@ -6,6 +6,11 @@ class AppException(Exception):
         super().__init__(message)
 
 
+class AuthenticationException(AppException):
+    def __init__(self, message: str = "Authentication is required."):
+        super().__init__(message, status_code=401, code="authentication_required")
+
+
 class UserNotFoundException(AppException):
     def __init__(self, phone: str):
         super().__init__(
@@ -22,3 +27,13 @@ class InvalidVerificationCodeException(AppException):
             status_code=400,
             code="invalid_verification_code",
         )
+
+
+class VerificationRateLimitException(AppException):
+    def __init__(self):
+        super().__init__("Please wait before requesting another code.", 429, "verification_rate_limited")
+
+
+class VerificationExpiredException(AppException):
+    def __init__(self):
+        super().__init__("The verification code has expired.", 400, "verification_expired")

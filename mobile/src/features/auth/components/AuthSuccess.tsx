@@ -18,7 +18,7 @@ export function AuthSuccess({ onContinue }: AuthSuccessProps) {
       </Text>
       <Pressable onPress={onContinue} style={styles.actionButton}>
         <Text style={styles.actionText}>Explore venues</Text>
-        <Text style={styles.actionArrow}>-&gt;</Text>
+        <Text style={styles.actionArrow}>›</Text>
       </Pressable>
     </View>
   );
