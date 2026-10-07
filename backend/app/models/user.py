@@ -1,18 +1,5 @@
 import uuid
-from datetime import datetime, date
-from sqlalchemy import (
-    Column,
-    String,
-    Integer,
-    Numeric,
-    Date,
-    DateTime,
-    ForeignKey,
-    UniqueConstraint,
-    func,
-)
-from sqlalchemy.dialects.postgresql import UUID
-from geoalchemy2 import Geometry
+from sqlalchemy import Boolean, Column, DateTime, String, func
 
 from app.database import Base
 
@@ -24,23 +11,12 @@ class User(Base):
     """
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    phone = Column(String(20), unique=True, nullable=False, index=True)
+    full_name = Column(String(120), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
-    
-    # Restrained check constraints enforced natively at database tier via Pydantic/PRD boundaries
-    # Roles: 'Customer', 'Host', 'SuperAdmin'
-    role = Column(String(50), nullable=False, server_default="Customer")
-    
-    first_name = Column(String(100), nullable=True)
-    last_name = Column(String(100), nullable=True)
-    
+    account_type = Column(String(20), nullable=False, server_default="customer")
+    is_verified = Column(Boolean, nullable=False, server_default="0")
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(
-        DateTime(timezone=True), 
-        server_default=func.now(), 
-        onupdate=func.now(), 
-        nullable=False
-    )
 
 

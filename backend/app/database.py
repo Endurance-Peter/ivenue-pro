@@ -7,15 +7,11 @@ from app.config import settings
 
 logger = logging.getLogger("ivenue_database")
 
-# Create High-Performance Asynchronous Database Engine with Connection Pooling
-async_engine = create_async_engine(
-    settings.async_database_url, # Consuming your adjusted property safely
-    echo=False,
-    pool_size=20,
-    max_overflow=10,
-    pool_timeout=30.0,
-    pool_recycle=1800,
-)
+engine_options = {"echo": settings.app_env == "development"}
+if not settings.async_database_url.startswith("sqlite"):
+    engine_options.update(pool_size=20, max_overflow=10, pool_timeout=30.0, pool_recycle=1800)
+
+async_engine = create_async_engine(settings.async_database_url, **engine_options)
 
 # Instantiate Asynchronous Session Factory
 AsyncSessionLocal = async_sessionmaker(

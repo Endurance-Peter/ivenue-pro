@@ -7,11 +7,7 @@ class Settings(BaseSettings):
     app_env: str = Field(default="development")
     api_host: str = Field(default="127.0.0.1")
     api_port: int = Field(default=8000)
-    postgres_host: str = Field(default="localhost")  # Default to 'db' for Docker network
-    postgres_port: int = Field(default=5432)
-    postgres_user: str = Field(default="ivenue")
-    postgres_db: str = Field(default="ivenuedb")
-    DATABASE_URL: str | None = Field(default=None)
+    database_url: str = Field(default="sqlite+aiosqlite:///./ivenue.db")
     
     redis_host: str = Field(default="redis")
     redis_port: int = Field(default=6379)
@@ -28,15 +24,11 @@ class Settings(BaseSettings):
 
     @property
     def async_database_url(self) -> str:
-        # Fallback: If DATABASE_URL isn't explicitly supplied in .env, construct it passwordless
-        if not self.DATABASE_URL:
-            return f"postgresql+asyncpg://{self.postgres_user}@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
-        
-        if self.DATABASE_URL.startswith("postgresql+psycopg"):
-            return self.DATABASE_URL.replace("postgresql+psycopg", "postgresql+asyncpg", 1)
-        elif self.DATABASE_URL.startswith("postgresql://"):
-            return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
-        return self.DATABASE_URL
+        if self.database_url.startswith("postgresql+psycopg"):
+            return self.database_url.replace("postgresql+psycopg", "postgresql+asyncpg", 1)
+        if self.database_url.startswith("postgresql://"):
+            return self.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return self.database_url
 
 
 _settings: Settings | None = None
