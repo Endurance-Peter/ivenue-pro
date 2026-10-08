@@ -5,11 +5,12 @@ import { colors } from '../../../theme/colors';
 
 interface SignUpFormProps {
   onBack: () => void;
+  onSubmit: (fullName: string, email: string, role: AccountType) => Promise<void>;
 }
 
 type AccountType = 'customer' | 'host';
 
-export function SignUpForm({ onBack }: SignUpFormProps) {
+export function SignUpForm({ onBack, onSubmit }: SignUpFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [accountType, setAccountType] = useState<AccountType>('customer');
@@ -38,7 +39,7 @@ export function SignUpForm({ onBack }: SignUpFormProps) {
         <ChoiceCard active={accountType === 'host'} detail="Grow my business" label="List my space" onPress={() => setAccountType('host')} />
       </View>
 
-      <Pressable disabled={!canSubmit} onPress={() => setSubmitted(true)} style={[styles.actionButton, !canSubmit && styles.actionDisabled]}>
+      <Pressable disabled={!canSubmit} onPress={async () => { await onSubmit(name.trim(), email.trim(), accountType); setSubmitted(true); }} style={[styles.actionButton, !canSubmit && styles.actionDisabled]}>
         <Text style={styles.actionText}>{submitted ? 'Account ready' : 'Enter iVenue'}</Text><Text style={styles.actionArrow}>›</Text>
       </Pressable>
       {submitted ? <Text style={styles.success}>Your iVenue profile is ready.</Text> : null}

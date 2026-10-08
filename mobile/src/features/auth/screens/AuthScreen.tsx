@@ -1,34 +1,16 @@
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { colors } from '../../../theme/colors';
-import { AuthForm } from '../components/AuthForm';
-import { AuthSuccess } from '../components/AuthSuccess';
+import { PasswordAuthForm } from '../components/PasswordAuthForm';
 import { BrandPanel } from '../components/BrandPanel';
-import { SignUpForm } from '../components/SignUpForm';
-import { useAuthFlow } from '../hooks/useAuthFlow';
+import { usePasswordAuthFlow } from '../hooks/usePasswordAuthFlow';
+import { SessionResponse } from '../../../lib/api';
 
-export function AuthScreen() {
-  const auth = useAuthFlow();
+export function AuthScreen({ onAuthenticated }: { onAuthenticated: (session: SessionResponse) => void }) {
   const { width } = useWindowDimensions();
   const isPhoneLayout = width < 768;
 
-  if (auth.state.step === 'success') {
-    return (
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <View style={styles.phoneShell}>
-            {isPhoneLayout ? (
-              <View style={styles.mobileHeader}>
-                <View style={styles.mobileLogo}><Text style={styles.mobileLogoText}>iV</Text></View>
-                <Text style={styles.mobileBrandName}>iVenue</Text>
-              </View>
-            ) : <BrandPanel />}
-            {auth.state.mode === 'signin' ? <AuthSuccess onContinue={() => undefined} /> : <SignUpForm onBack={auth.backToVerification} />}
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    );
-  }
+  const auth = usePasswordAuthFlow(onAuthenticated);
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
@@ -40,21 +22,7 @@ export function AuthScreen() {
               <Text style={styles.mobileBrandName}>iVenue</Text>
             </View>
           ) : <BrandPanel />}
-          <AuthForm
-            step={auth.state.step}
-            phone={auth.state.phone}
-            code={auth.state.code}
-            error={auth.state.error}
-            canContinue={auth.canContinue}
-            canVerify={auth.canVerify}
-            onPhoneChange={auth.updatePhone}
-            onCodeChange={auth.updateCode}
-            onContinue={auth.continueToCode}
-            onVerify={auth.verifyCode}
-            onUseDifferentNumber={auth.useDifferentNumber}
-            mode={auth.state.mode}
-            onModeChange={auth.setMode}
-          />
+          <PasswordAuthForm {...auth.state} onModeChange={auth.setMode} onChange={auth.update} onSubmit={auth.submit} />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

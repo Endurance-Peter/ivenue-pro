@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors } from '../../../theme/colors';
@@ -47,6 +47,12 @@ export function AuthForm({
 
   return (
     <View style={styles.panel}>
+      {error ? (
+        <View accessibilityRole="alert" style={styles.notification}>
+          <View style={styles.notificationMark}><Text style={styles.notificationMarkText}>!</Text></View>
+          <Text style={styles.notificationText}>{error}</Text>
+        </View>
+      ) : null}
       <View style={styles.progressRow}>
         {[0, 1, 2].map((index) => (
           <View key={index} style={[styles.progressBar, index === (isPhoneStep ? 0 : 1) && styles.progressActive]} />
@@ -92,7 +98,6 @@ export function AuthForm({
         />
       )}
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
       <Text style={styles.legal}>By continuing, you agree to iVenue's Terms of Service and Privacy Policy.</Text>
     </View>
   );
@@ -128,10 +133,42 @@ function PhoneStep({ phone, mode, canContinue, hasError, onPhoneChange, onContin
 }
 
 function CodeStep({ code, canVerify, hasError, onCodeChange, onVerify, onUseDifferentNumber }: Pick<AuthFormProps, 'code' | 'canVerify' | 'onCodeChange' | 'onVerify' | 'onUseDifferentNumber'> & { hasError: boolean }) {
+  const inputRefs = useRef<Array<TextInput | null>>([]);
+  const digits = code.padEnd(6, ' ').slice(0, 6).split('');
+
   return (
     <>
       <Text style={styles.label}>Verification code</Text>
-      <TextInput autoFocus keyboardType="number-pad" maxLength={6} onChangeText={onCodeChange} placeholder="000000" placeholderTextColor={colors.muted} style={[styles.codeInput, hasError && styles.inputError]} value={code} />
+      <View style={styles.codeBoxes}>
+        {digits.map((digit, index) => (
+          <TextInput
+            key={index}
+            autoFocus={index === 0}
+            caretHidden
+            keyboardType="number-pad"
+            maxLength={1}
+            onChangeText={(value) => {
+              const next = value.replace(/\D/g, '').slice(-1);
+              const nextCode = code.slice(0, index) + next + code.slice(index + 1);
+              onCodeChange(nextCode);
+              if (next && index < 5) inputRefs.current[index + 1]?.focus();
+            }}
+            onKeyPress={({ nativeEvent }) => {
+              if (nativeEvent.key === 'Backspace' && !code[index] && index > 0) {
+                onCodeChange(code.slice(0, index - 1) + code.slice(index));
+                inputRefs.current[index - 1]?.focus();
+              }
+            }}
+            placeholder="•"
+            placeholderTextColor={colors.muted}
+            selectTextOnFocus
+            style={[styles.codeBox, hasError && styles.inputError]}
+            value={digit.trim()}
+            ref={(input) => { inputRefs.current[index] = input; }}
+          />
+        ))}
+      </View>
+      <Text style={styles.codeHint}>Enter the six-digit code sent to your phone.</Text>
       <ActionButton disabled={!canVerify} label="Verify number" onPress={onVerify} />
       <Pressable onPress={onUseDifferentNumber} style={styles.backButton}>
         <Text style={styles.backText}>Use a different number</Text>
@@ -174,6 +211,9 @@ const styles = StyleSheet.create({
   countryOptionName: { color: colors.ink, fontSize: 14 },
   countryOptionCode: { color: colors.muted, fontSize: 14 },
   codeInput: { height: 64, borderWidth: 1, borderColor: colors.line, borderRadius: 16, backgroundColor: colors.surface, color: colors.ink, fontSize: 25, letterSpacing: 7, paddingHorizontal: 18 },
+  codeBoxes: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
+  codeBox: { width: 44, height: 56, borderWidth: 1, borderColor: colors.line, borderRadius: 12, backgroundColor: colors.surface, color: colors.ink, fontSize: 23, textAlign: 'center' },
+  codeHint: { color: '#827970', fontSize: 12, marginTop: 10 },
   inputError: { borderColor: colors.error },
   actionButton: { height: 62, borderRadius: 16, marginTop: 18, backgroundColor: colors.ink, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
   actionDisabled: { backgroundColor: '#a5a19b' },
@@ -181,6 +221,9 @@ const styles = StyleSheet.create({
   actionArrow: { color: colors.surface, fontSize: 18 },
   backButton: { alignItems: 'center', paddingVertical: 20 },
   backText: { color: colors.accent, fontSize: 14, fontWeight: '600' },
-  error: { color: colors.error, fontSize: 13, marginTop: 12 },
+  notification: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#e8b8ae', borderRadius: 14, backgroundColor: '#fff5f2', padding: 12, marginBottom: 22 },
+  notificationMark: { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.error, alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  notificationMarkText: { color: colors.surface, fontSize: 14, fontWeight: '800' },
+  notificationText: { flex: 1, color: '#8e3f35', fontSize: 13, lineHeight: 19 },
   legal: { color: '#827970', fontSize: 12, lineHeight: 18, marginTop: 26 },
 });

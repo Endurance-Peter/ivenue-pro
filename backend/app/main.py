@@ -3,6 +3,8 @@ from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,9 +28,17 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     app = FastAPI(title=settings.project_name, version="0.1.0", lifespan=lifespan)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     register_exception_handlers(app)
     register_middleware(app)
     app.include_router(api_router)
+    app.mount("/media", StaticFiles(directory="media"), name="media")
 
     @app.get("/health", tags=["System"])
     async def health(db: AsyncSession = Depends(get_db)) -> dict[str, str]:

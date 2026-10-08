@@ -11,6 +11,11 @@ class AuthenticationException(AppException):
         super().__init__(message, status_code=401, code="authentication_required")
 
 
+class ProviderDeliveryException(AppException):
+    def __init__(self, message: str = "We could not send your verification code right now. Please check your number and try again."):
+        super().__init__(message, status_code=503, code="provider_delivery_failed")
+
+
 class UserNotFoundException(AppException):
     def __init__(self, phone: str):
         super().__init__(
@@ -18,6 +23,11 @@ class UserNotFoundException(AppException):
             status_code=404,
             code="user_not_found",
         )
+
+
+class InvalidCredentialsException(AppException):
+    def __init__(self):
+        super().__init__("The email or password is incorrect.", status_code=401, code="invalid_credentials")
 
 
 class InvalidVerificationCodeException(AppException):

@@ -1,0 +1,158 @@
+# Database Migrations
+
+iVenue uses Alembic for schema migrations. Run all commands from the `backend` directory so Alembic loads the project settings and SQLite database configured in `.env`.
+
+```powershell
+cd backend
+```
+
+## Create a Migration
+
+After changing a SQLAlchemy model, generate a migration from the model metadata:
+
+```powershell
+uv run alembic revision --autogenerate -m "add venues table"
+```
+
+Migration filenames are generated automatically using this format:
+
+```text
+MYYYYMMDDHHMM_<description>.py
+```
+
+Example:
+
+```text
+M202610072203_add_venues_table.py
+```
+
+Review the generated migration before applying it. Autogeneration should not be treated as a replacement for a migration review.
+
+## Apply Migrations
+
+Apply all pending migrations:
+
+```powershell
+uv run alembic upgrade head
+```
+
+Apply the next migration only:
+
+```powershell
+uv run alembic upgrade +1
+```
+
+Apply migrations up to a specific revision:
+
+```powershell
+uv run alembic upgrade <revision>
+```
+
+## Inspect Migration State
+
+Show the revision currently applied to the database:
+
+```powershell
+uv run alembic current
+```
+
+Show the latest available revision:
+
+```powershell
+uv run alembic heads
+```
+
+Show the migration history:
+
+```powershell
+uv run alembic history
+```
+
+Show the history in more detail:
+
+```powershell
+uv run alembic history --verbose
+```
+
+Check whether model metadata differs from the database schema:
+
+```powershell
+uv run alembic check
+```
+
+## Undo Migrations
+
+Undo the most recently applied migration:
+
+```powershell
+uv run alembic downgrade -1
+```
+
+Undo migrations to a specific revision:
+
+```powershell
+uv run alembic downgrade <revision>
+```
+
+Undo all migrations and return to an empty schema:
+
+```powershell
+uv run alembic downgrade base
+```
+
+## Reset Local SQLite Database
+
+For local development only, remove the SQLite database and recreate it from migrations:
+
+```powershell
+Remove-Item .\ivenue.db -Force -ErrorAction SilentlyContinue
+uv run alembic upgrade head
+```
+
+Do not use this reset command against a shared or production database. Use a reviewed downgrade or a forward migration instead.
+
+## Baseline an Existing Database
+
+If a database already contains the correct schema but has no Alembic version history, mark it as current without running migrations:
+
+```powershell
+uv run alembic stamp head
+```
+
+Only use `stamp` after verifying that the existing schema matches the migration history. It does not create or alter tables.
+
+## Seed an Admin Account
+
+Apply the schema first:
+
+```powershell
+uv run alembic upgrade head
+```
+
+Set the account details in the current PowerShell session:
+
+```powershell
+$env:ADMIN_PHONE="your-phone-number"
+$env:ADMIN_EMAIL="your-email@example.com"
+$env:ADMIN_NAME="Your Name"
+$env:ADMIN_ROLE="super_admin"
+$env:ADMIN_PASSWORD="your-strong-password"
+```
+
+Then seed the account:
+
+```powershell
+uv run python scripts/seed_admin.py
+```
+
+Allowed roles are `admin` and `super_admin`. Public signup cannot create either privileged role. Development admin login uses the email and password configured above. Phone OTP remains commented/deferred until Termii is approved.
+
+## Initial Migration
+
+The initial authentication schema is:
+
+```text
+migrations/versions/M202610070000_initial_auth_schema.py
+```
+
+It creates the `users` and `verification_codes` tables used by the authentication flow.

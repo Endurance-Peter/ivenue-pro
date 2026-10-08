@@ -1,9 +1,8 @@
 import uuid
-from datetime import datetime, date
+from datetime import date
 from sqlalchemy import (
     Column,
     String,
-    Integer,
     Numeric,
     Date,
     DateTime,
@@ -11,8 +10,6 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
-from sqlalchemy.dialects.postgresql import UUID
-from geoalchemy2 import Geometry
 
 from app.database import Base
 
@@ -23,17 +20,17 @@ class Reservation(Base):
     """
     __tablename__ = "reservations"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
     
     # Structural foreign keys blocking cascades to maintain audit trails
     venue_id = Column(
-        UUID(as_uuid=True), 
+        String(36),
         ForeignKey("venues.id", ondelete="RESTRICT"), 
         nullable=False,
         index=True
     )
     customer_id = Column(
-        UUID(as_uuid=True), 
+        String(36),
         ForeignKey("users.id", ondelete="RESTRICT"), 
         nullable=False,
         index=True

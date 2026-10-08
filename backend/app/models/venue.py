@@ -1,18 +1,14 @@
 import uuid
-from datetime import datetime, date
 from sqlalchemy import (
     Column,
+    Text,
     String,
     Integer,
     Numeric,
-    Date,
     DateTime,
     ForeignKey,
-    UniqueConstraint,
     func,
 )
-from sqlalchemy.dialects.postgresql import UUID
-from geoalchemy2 import Geometry
 
 from app.database import Base
 
@@ -23,17 +19,17 @@ class Venue(Base):
     """
     __tablename__ = "venues"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
     
     # Clear relational ownership mapping
     host_id = Column(
-        UUID(as_uuid=True), 
+        String(36),
         ForeignKey("users.id", ondelete="CASCADE"), 
         nullable=False
     )
     
     name = Column(String(255), nullable=False)
-    description = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
     
     capacity_min = Column(Integer, nullable=False)
     capacity_max = Column(Integer, nullable=False)
@@ -46,10 +42,8 @@ class Venue(Base):
     state = Column(String(100), nullable=False, index=True)
     
     # PostGIS Geography Point Geometry Tracking (SRID 4326 maps to standard GPS coordinates)
-    geo_location = Column(
-        Geometry(geometry_type="POINT", srid=4326, spatial_index=True), 
-        nullable=True
-    )
+    geo_location = Column(Text, nullable=True)
+    status = Column(String(20), nullable=False, server_default="published", index=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

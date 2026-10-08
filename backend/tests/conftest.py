@@ -45,6 +45,14 @@ async def db_session(test_engine) -> AsyncIterator[AsyncSession]:
 
 @pytest.fixture
 def client(test_engine) -> Iterator[TestClient]:
+    async def reset_database() -> None:
+        async with test_engine.begin() as connection:
+            await connection.run_sync(Base.metadata.drop_all)
+            await connection.run_sync(Base.metadata.create_all)
+
+    import asyncio
+    asyncio.run(reset_database())
+
     async def override_get_db() -> AsyncIterator[AsyncSession]:
         session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
         async with session_factory() as session:

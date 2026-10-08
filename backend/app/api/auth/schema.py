@@ -7,14 +7,15 @@ Role = Literal["customer", "host", "admin", "super_admin"]
 
 
 class SignupRequest(BaseModel):
-    phone: str = Field(min_length=10, max_length=20)
     full_name: str = Field(min_length=2, max_length=120)
     email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
     role: Literal["customer", "host"] = "customer"
 
 
 class SigninRequest(BaseModel):
-    phone: str = Field(min_length=10, max_length=20)
+    email: EmailStr
+    password: str = Field(min_length=1, max_length=128)
 
 
 class VerifyCodeRequest(BaseModel):
@@ -27,14 +28,14 @@ class VerifyCodeRequest(BaseModel):
 
 class VerificationResponse(BaseModel):
     message: str
-    phone: str
+    phone: str | None
 
 
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
-    phone: str
+    phone: str | None
     full_name: str
     email: EmailStr
     role: Role

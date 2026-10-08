@@ -20,9 +20,17 @@ class Settings(BaseSettings):
     termii_api_key: str | None = None
     termii_api_url: str = Field(default="https://api.ng.termii.com/api/sms/send")
     termii_sender_id: str = Field(default="iVenue")
+    supabase_url: str | None = None
+    supabase_service_role_key: str | None = None
+    supabase_storage_bucket: str = Field(default="venue-images")
     public_app_url: str = Field(default="http://localhost:8081")
     jwt_algorithm: str = Field(default="HS256")
     jwt_access_token_expire_minutes: int = Field(default=30)
+    admin_phone: str | None = None
+    admin_email: str | None = None
+    admin_name: str | None = None
+    admin_role: str = Field(default="super_admin")
+    admin_password: str | None = None
     otp_expiry_minutes: int = Field(default=5)
     otp_max_attempts: int = Field(default=5)
     otp_resend_cooldown_seconds: int = Field(default=60)
