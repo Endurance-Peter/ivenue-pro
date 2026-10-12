@@ -59,3 +59,40 @@ npm start
 
 Use `http://10.0.2.2:8000` for an Android emulator, your computer's LAN IP for a physical device, or `http://127.0.0.1:8000` for web.
 
+### Attach Existing Supabase Images
+
+Images must be stored in the same Supabase project configured in the backend. Place them under an existing venue ID:
+
+```text
+venue-images/<venue_id>/cover.jpg
+venue-images/<venue_id>/second-image.jpg
+```
+
+Then run:
+
+```powershell
+cd backend
+uv run python scripts/sync_supabase_images.py
+```
+
+The script creates missing `VenueImage` records for existing venues. The customer landing page then receives the public Supabase URLs from `GET /api/v1/venues`.
+
+### Full-Stack Debugging
+
+Install the recommended VS Code extensions when prompted. Open **Run and Debug** and select:
+
+```text
+iVenue: Mobile + Backend
+```
+
+This starts FastAPI under `debugpy` and Expo Web on port `8082`. Set Python breakpoints in `backend/app` and TypeScript breakpoints in `mobile/src`; a request from the mobile UI will stop in both layers as it crosses the API.
+
+For a physical phone with Expo Go:
+
+1. Start the backend with the `Backend: FastAPI` debug profile.
+2. Start Expo with `npx expo start --lan` from `mobile`.
+3. Use the **React Native: Attach to packager** command from the React Native Tools extension.
+4. Keep `mobile/.env` pointed at your computer LAN address, for example `EXPO_PUBLIC_API_URL=http://10.170.196.55:8000`.
+
+The browser debug profile is the recommended first path because JavaScript and Python breakpoints can be launched together reliably.
+

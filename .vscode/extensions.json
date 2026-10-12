@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    "msjsdiag.debugger-for-edge",
+    "msjsdiag.vscode-react-native"
+  ]
+}

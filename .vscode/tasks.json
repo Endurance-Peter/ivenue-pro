@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "backend: dev server",
+      "type": "process",
+      "command": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+      "args": [
+        "-m",
+        "uvicorn",
+        "main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "python",
+        "pattern": {
+          "regexp": ".*"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Uvicorn running on",
+          "endsPattern": "Application startup complete"
+        }
+      }
+    },
+    {
+      "label": "mobile: Expo web",
+      "type": "process",
+      "command": "npx",
+      "args": ["expo", "start", "--web", "--port", "8082"],
+      "options": {
+        "cwd": "${workspaceFolder}/mobile"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "expo",
+        "pattern": {
+          "regexp": ".*"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting project",
+          "endsPattern": "Web is waiting|Web .*http://localhost:8082"
+        }
+      }
+    }
+  ]
+}

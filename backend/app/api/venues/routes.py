@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.venues.schema import VenueCreateRequest, VenueImageResponse, VenueResponse
-from app.api.venues.service import add_venue_image, attach_images, create_venue, list_host_venues, list_published_venues
+from app.api.venues.service import add_venue_image, attach_images, create_venue, list_host_venues, list_published_venues, publish_venue
 from app.core.security import get_current_user
 from app.database import get_db
 from app.models.user import User
@@ -45,3 +45,14 @@ async def upload_venue_image(
 ) -> VenueImageResponse:
     record = await add_venue_image(venue_id, image, current_user, db)
     return VenueImageResponse.model_validate(record)
+
+
+@router.post("/{venue_id}/publish", response_model=VenueResponse)
+async def publish_host_venue(
+    venue_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> VenueResponse:
+    venue = await publish_venue(venue_id, current_user, db)
+    venue.images = list(await attach_images([venue], db))[0].images
+    return VenueResponse.model_validate(venue)

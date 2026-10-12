@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? Platform.select({
   android: 'http://10.0.2.2:8000',
@@ -7,9 +8,13 @@ const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? Platform.select({
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   try {
+    const isMultipart = typeof FormData !== 'undefined' && options.body instanceof FormData;
     const response = await fetch(`${apiBaseUrl}/api/v1${path}`, {
       ...options,
-      headers: { 'Content-Type': 'application/json', ...(options.headers ?? {}) },
+      headers: {
+        ...(isMultipart ? {} : { 'Content-Type': 'application/json' }),
+        ...(options.headers ?? {}),
+      },
     });
     const body = await response.json();
     if (!response.ok) {
@@ -61,11 +66,28 @@ export const venueApi = {
   list: () => request<Venue[]>('/venues'),
   listMine: (token: string) => authenticatedRequest<Venue[]>('/venues/mine', token),
   create: (token: string, payload: Omit<Venue, 'id' | 'host_id' | 'status' | 'images'>) => authenticatedRequest<Venue>('/venues', token, { method: 'POST', body: JSON.stringify(payload) }),
-  uploadImage: (token: string, venueId: string, image: { uri: string; name: string; type: string }) => {
+  uploadImage: async (token: string, venueId: string, image: { uri: string; name: string; type: string }) => {
+    if (Platform.OS !== 'web') {
+      const response = await FileSystem.uploadAsync(`${apiBaseUrl}/api/v1/venues/${venueId}/images`, image.uri, {
+        httpMethod: 'POST',
+        uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+        fieldName: 'image',
+        mimeType: image.type,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const body = JSON.parse(response.body);
+      if (response.status < 200 || response.status >= 300) throw new Error(body?.error?.message ?? 'Unable to upload the selected image.');
+      return body as { id: string; url: string };
+    }
+
+    const imageResponse = await fetch(image.uri);
+    if (!imageResponse.ok) throw new Error('Unable to read the selected image.');
+    const imageBlob = await imageResponse.blob();
     const form = new FormData();
-    form.append('image', image as unknown as Blob);
-    return authenticatedRequest<{ id: string; url: string }>(`/venues/${venueId}/images`, token, { method: 'POST', body: form, headers: {} });
+    form.append('image', imageBlob, image.name);
+    return authenticatedRequest<{ id: string; url: string }>(`/venues/${venueId}/images`, token, { method: 'POST', body: form });
   },
+  publish: (token: string, venueId: string) => authenticatedRequest<Venue>(`/venues/${venueId}/publish`, token, { method: 'POST' }),
 };
 
 export { apiBaseUrl };

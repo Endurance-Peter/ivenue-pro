@@ -28,7 +28,8 @@ async def store_venue_image(venue_id: str, image: UploadFile) -> tuple[str, str]
         }
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(url, content=content, headers=headers)
-            response.raise_for_status()
+            if response.is_error:
+                raise RuntimeError(f"Supabase Storage upload failed: HTTP {response.status_code}")
         public_url = f"{settings.supabase_url.rstrip('/')}/storage/v1/object/public/{settings.supabase_storage_bucket}/{storage_key}"
         return storage_key, public_url
 
